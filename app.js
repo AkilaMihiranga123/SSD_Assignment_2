@@ -1,4 +1,7 @@
+const fs = require("fs");
 const express = require("express");
+const multer = require("multer");
+const path = require("path");
 const { google } = require("googleapis");
 
 const port = 5000;
@@ -73,6 +76,53 @@ app.get("/google/callback", function (req, res) {
 app.get("/google/logout", (req, res) => {
   authorized = false;
   res.redirect("/");
+});
+
+var Storage = multer.diskStorage({
+  destination: function (req, file, callback) {
+    callback(null, "./images");
+  },
+  filename: function (req, file, callback) {
+    callback(null, file.fieldname + "_" + Date.now() + "_" + file.originalname);
+  },
+});
+
+var upload = multer({
+  storage: Storage,
+}).single("file");
+
+app.post("/upload", (req, res) => {
+  upload(req, res, function (err) {
+    if (err) {
+      console.log(err);
+      return res.end("Something went wrong");
+    } else {
+      console.log(req.file.path);
+      const drive = google.drive({ version: "v3", auth: oAuth2Client });
+      const fileMetadata = {
+        name: req.file.filename,
+      };
+      const media = {
+        mimeType: req.file.mimetype,
+        body: fs.createReadStream(req.file.path),
+      };
+      drive.files.create(
+        {
+          resource: fileMetadata,
+          media: media,
+          fields: "id",
+        },
+        (err, file) => {
+          if (err) {
+            console.error(err);
+          } else {
+            fs.unlinkSync(req.file.path);
+            res.render("fileUpload", { name: name, pic: pic, success: true });
+          }
+        }
+      );
+    }
+  });
 });
 
 // app run on port 5000
