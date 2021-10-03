@@ -4,8 +4,19 @@ const multer = require("multer");
 const path = require("path");
 const { google } = require("googleapis");
 
+const passport = require("passport");
+const session = require("express-session");
+const OAuth2Data = require("./credentials.json");
+const User = require('./models/User');
+
+const facebookStrategy = require("passport-facebook").Strategy;
+
 const port = 5000;
 const app = express();
+
+app.use(session({ secret: OAuth2Data.web_facebook.secret }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 var name;
 var pic;
@@ -24,6 +35,10 @@ const oAuth2Client = new google.auth.OAuth2(
 
 const GOOGLE_SCOPES =
   "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile";
+
+app.set("views", path.join(__dirname, "/frontend/views"));
+app.use(express.static(path.join(__dirname, 'frontend')));
+app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
   if (!authorized) {
@@ -122,6 +137,68 @@ app.post("/upload", (req, res) => {
         }
       );
     }
+  });
+});
+
+passport.use(
+  new facebookStrategy(
+    {
+      clientID: "274166941379127",
+      clientSecret: "b148e118ec3b5f56086bdc839e2b96e6",
+      callbackURL: "http://localhost:5000/facebook/callback",
+      profileFields: [
+        "id",
+        "displayName",
+        "name",
+        "gender",
+        "picture.type(large)",
+        "email",
+      ],
+    },
+    
+    function (token, refreshToken, profile, done) {
+      process.nextTick(function () {
+        
+        User.findOne({ uid: profile.id }, function (err, facebook_user) {
+          if (err) return done(err);
+          if (facebook_user) {
+            console.log("facebook user found");
+            console.log(facebook_user);
+            return done(null, facebook_user);
+          } else {
+            
+            var newFacebookUser = new User();
+            newFacebookUser.uid = profile.id;
+            newFacebookUser.token = token;
+            newFacebookUser.name = profile.name.givenName + " " + profile.name.familyName;
+            newFacebookUser.email = profile.emails[0].value;
+            newFacebookUser.gender = profile.gender;
+            newFacebookUser.pic = profile.photos[0].value;
+            newFacebookUser.save(function (err) {
+              if (err) throw err;
+              return done(null, newFacebookUser);
+            });
+          }
+        });
+      });
+    }
+  )
+);
+
+passport.serializeUser(function (user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function (id, done) {
+  User.findById(id, function (err, user) {
+    done(err, user);
+  });
+});
+
+app.get("/facebook/profile", isLoggedIn, function (req, res) {
+  console.log(req.user);
+  res.render("facebookProfile", {
+    user: req.user,
   });
 });
 
