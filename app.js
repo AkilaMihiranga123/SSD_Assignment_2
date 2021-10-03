@@ -70,6 +70,11 @@ app.get("/google/callback", function (req, res) {
   }
 });
 
+app.get("/google/logout", (req, res) => {
+  authorized = false;
+  res.redirect("/");
+});
+
 // app run on port 5000
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
