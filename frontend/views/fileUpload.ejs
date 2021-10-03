@@ -15,11 +15,11 @@
           <h3 class="text-danger">
             <span class="fa fa-google-plus"></span> google
           </h3>
-          <img src="" width="150" height="150" alt="profile-pic" />
+          <img src="<%=pic%>" width="150" height="150" alt="profile-pic" />
           <h5><b>
-              
+            <%= name %> 
             </b></h5>
-          <a href="" class="btn btn-outline-primary btn-sm">Logout</a>
+          <a href="/google/logout" class="btn btn-outline-primary btn-sm">Logout</a>
         </div>
       </div>
     </div>
@@ -28,7 +28,7 @@
         <div class="card card-body border-primary text-center">
           <h4><b>GOOGLE DRIVE FILE UPLOADER</b></h4>
          
-              <form action="" method="POST" enctype="multipart/form-data">
+              <form action="/upload" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                   <input type="file" class="form-control" name="file" required id="" />
                 </div>
