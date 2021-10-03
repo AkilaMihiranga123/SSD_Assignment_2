@@ -143,9 +143,9 @@ app.post("/upload", (req, res) => {
 passport.use(
   new facebookStrategy(
     {
-      clientID: "274166941379127",
-      clientSecret: "b148e118ec3b5f56086bdc839e2b96e6",
-      callbackURL: "http://localhost:5000/facebook/callback",
+      clientID: OAuth2Data.web_facebook.client_id,
+      clientSecret: OAuth2Data.web_facebook.client_secret,
+      callbackURL: OAuth2Data.web_facebook.redirect_uris,
       profileFields: [
         "id",
         "displayName",
