@@ -7,7 +7,7 @@ const { google } = require("googleapis");
 const passport = require("passport");
 const session = require("express-session");
 const OAuth2Data = require("./credentials.json");
-const User = require('./models/User');
+const User = require("./models/User");
 
 const facebookStrategy = require("passport-facebook").Strategy;
 
@@ -22,10 +22,12 @@ var name;
 var pic;
 var authorized = false;
 
-const GOOGLE_CLIENT_ID =
-  "434044807901-rmrri0k1kqspigdgqp49q84r7buo83ue.apps.googleusercontent.com";
-const GOOGLE_CLIENT_SECRET = "-rtfWGRO7qtvimMS5z4nnroS";
-const GOOGLE_REDIRECT_URL = "http://localhost:5000/google/callback";
+/*
+  Google oAuth authorization
+*/
+const GOOGLE_CLIENT_ID = OAuth2Data.web.client_id;
+const GOOGLE_CLIENT_SECRET = OAuth2Data.web.client_secret;
+const GOOGLE_REDIRECT_URL = OAuth2Data.web.redirect_uris[0];
 
 const oAuth2Client = new google.auth.OAuth2(
   GOOGLE_CLIENT_ID,
@@ -33,15 +35,18 @@ const oAuth2Client = new google.auth.OAuth2(
   GOOGLE_REDIRECT_URL
 );
 
+// web client scopes
 const GOOGLE_SCOPES =
   "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile";
 
 app.set("views", path.join(__dirname, "/frontend/views"));
-app.use(express.static(path.join(__dirname, 'frontend')));
+app.use(express.static(path.join(__dirname, "frontend")));
 app.set("view engine", "ejs");
 
+// google user authorization
 app.get("/", (req, res) => {
   if (!authorized) {
+    // generate authorization url
     var url = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: GOOGLE_SCOPES,
@@ -53,6 +58,7 @@ app.get("/", (req, res) => {
       auth: oAuth2Client,
       version: "v2",
     });
+    // get authorized user informations
     oauth2.userinfo.get(function (err, response) {
       if (err) {
         console.log(err);
@@ -70,9 +76,12 @@ app.get("/", (req, res) => {
   }
 });
 
+// get access token
+// callback
 app.get("/google/callback", function (req, res) {
   const code = req.query.code;
   if (code) {
+    // get access token
     oAuth2Client.getToken(code, function (err, tokens) {
       if (err) {
         console.log("Error authenticating");
@@ -88,11 +97,13 @@ app.get("/google/callback", function (req, res) {
   }
 });
 
+// google logout
 app.get("/google/logout", (req, res) => {
   authorized = false;
   res.redirect("/");
 });
 
+// set upload image store path
 var Storage = multer.diskStorage({
   destination: function (req, file, callback) {
     callback(null, "./images");
@@ -106,6 +117,7 @@ var upload = multer({
   storage: Storage,
 }).single("file");
 
+// upload file to google drive
 app.post("/upload", (req, res) => {
   upload(req, res, function (err) {
     if (err) {
@@ -155,10 +167,9 @@ passport.use(
         "email",
       ],
     },
-    
+
     function (token, refreshToken, profile, done) {
       process.nextTick(function () {
-        
         User.findOne({ uid: profile.id }, function (err, facebook_user) {
           if (err) return done(err);
           if (facebook_user) {
@@ -166,11 +177,11 @@ passport.use(
             console.log(facebook_user);
             return done(null, facebook_user);
           } else {
-            
             var newFacebookUser = new User();
             newFacebookUser.uid = profile.id;
             newFacebookUser.token = token;
-            newFacebookUser.name = profile.name.givenName + " " + profile.name.familyName;
+            newFacebookUser.name =
+              profile.name.givenName + " " + profile.name.familyName;
             newFacebookUser.email = profile.emails[0].value;
             newFacebookUser.gender = profile.gender;
             newFacebookUser.pic = profile.photos[0].value;
@@ -228,7 +239,6 @@ app.get(
 app.get("/", (req, res) => {
   res.render("index");
 });
-
 
 // app run on port 5000
 app.listen(port, () => {
