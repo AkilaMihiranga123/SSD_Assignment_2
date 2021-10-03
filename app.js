@@ -202,6 +202,34 @@ app.get("/facebook/profile", isLoggedIn, function (req, res) {
   });
 });
 
+app.get("/facebook/logout", function (req, res) {
+  req.logout();
+  res.redirect("/");
+});
+
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  res.redirect("/facebook");
+}
+
+app.get(
+  "/auth/facebook",
+  passport.authenticate("facebook", { scope: "email" })
+);
+
+app.get(
+  "/facebook/callback",
+  passport.authenticate("facebook", {
+    successRedirect: "/facebook/profile",
+    failureRedirect: "/",
+  })
+);
+
+app.get("/", (req, res) => {
+  res.render("index");
+});
+
+
 // app run on port 5000
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
