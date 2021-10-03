@@ -17,7 +17,7 @@
           </h3>
           <img src="<%=pic%>" width="150" height="150" alt="profile-pic" />
           <h5><b>
-            <%= name %> 
+              <%= name %>
             </b></h5>
           <a href="/google/logout" class="btn btn-outline-primary btn-sm">Logout</a>
         </div>
@@ -27,7 +27,12 @@
       <div class="col-md-10 m-auto">
         <div class="card card-body border-primary text-center">
           <h4><b>GOOGLE DRIVE FILE UPLOADER</b></h4>
-         
+          <% if (success) { %>
+            <div class="alert alert-success alert-dismissible">
+              <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+              <strong>Success!</strong> Your File is Uploaded Successully.
+            </div>
+            <%}%>
               <form action="/upload" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                   <input type="file" class="form-control" name="file" required id="" />
