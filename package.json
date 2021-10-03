@@ -1,0 +1,31 @@
+{
+  "name": "ssd_assignment_2",
+  "version": "1.0.0",
+  "description": "Secure Software Development Assignment 02",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AkilaMihiranga123/SSD_Assignment_2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AkilaMihiranga123/SSD_Assignment_2/issues"
+  },
+  "homepage": "https://github.com/AkilaMihiranga123/SSD_Assignment_2#readme",
+  "dependencies": {
+    "ejs": "^3.1.6",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "googleapis": "^88.2.0",
+    "mongoose": "^6.0.8",
+    "multer": "^1.4.3",
+    "nodemon": "^2.0.13",
+    "passport": "^0.5.0",
+    "passport-facebook": "^3.0.0"
+  }
+}
